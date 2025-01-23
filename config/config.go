@@ -19,3 +19,13 @@ func ApiDebug() bool {
 
 	return false
 }
+
+func ApiBasicUsername() string {
+
+	return "admin"
+}
+
+func ApiBasicPassword() string {
+
+	return "password"
+}

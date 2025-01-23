@@ -6,11 +6,12 @@ func (a *Api) registerRoutes() {
 
 	controller := apicontroller.NewController()
 
+	// register middlewares //
+	a.registerMiddlewares()
+
 	// server //
 
 	a.hs.RegisterGetRoute("/server/ping", controller.ServerPing)
-
-	a.hs.RegisterPostRoute("/server/ping", controller.ServerPing)
 
 	a.hs.RegisterGetRoute("/server/timezone", controller.ServerTimezone)
 
