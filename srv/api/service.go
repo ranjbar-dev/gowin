@@ -3,9 +3,9 @@ package api
 import (
 	"context"
 
-	"github.com/ranjbar-dev/golog"
 	"github.com/ranjbar-dev/gowin/config"
 	"github.com/ranjbar-dev/gowin/internal/httpserver"
+	"github.com/ranjbar-dev/gowin/tools/logger"
 )
 
 type Api struct {
@@ -21,13 +21,14 @@ func (a *Api) Start() {
 	// start http server
 	go func() {
 
+		logger.Debug("Api server started").Log()
 		err := a.hs.Serve()
 		if err != nil {
 
-			golog.Logger.Error("Api server stopped", "server stopped", err)
+			logger.Error("Api server stopped").Message(err.Error()).Log()
 		} else {
 
-			golog.Logger.Trace("Api server stopped", "server stopped")
+			logger.Debug("Api server stopped").Log()
 		}
 
 	}()

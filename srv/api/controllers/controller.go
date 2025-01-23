@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/ranjbar-dev/golog"
+	"github.com/ranjbar-dev/gowin/tools/logger"
 )
 
 type Controller struct {
@@ -27,12 +27,12 @@ func (controller *Controller) ok(c *gin.Context, data any) {
 
 func (controller *Controller) badRequest(c *gin.Context, msg string) {
 
-	golog.Logger.Warn("Api bad response", "api server response was bad response", map[string]any{
+	logger.Warn("Api bad response").Message("api server response was bad response").Params(map[string]any{
 		"path":   c.Request.URL.Path,
 		"method": c.Request.Method,
 		"query":  c.Request.URL.Query(),
 		"header": c.Request.Header,
-	})
+	}).Log()
 
 	c.JSON(http.StatusBadRequest, gin.H{
 		"message": msg,
@@ -41,12 +41,12 @@ func (controller *Controller) badRequest(c *gin.Context, msg string) {
 
 func (controller *Controller) error(c *gin.Context, err error) {
 
-	golog.Logger.Warn("Api error response", "api server response was error response", map[string]any{
+	logger.Warn("Api error response").Message("api server response was error response").Params(map[string]any{
 		"path":   c.Request.URL.Path,
 		"method": c.Request.Method,
 		"query":  c.Request.URL.Query(),
 		"header": c.Request.Header,
-	})
+	}).Log()
 
 	c.JSON(http.StatusInternalServerError, gin.H{
 		"message": err.Error(),
