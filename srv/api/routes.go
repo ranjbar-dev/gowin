@@ -21,4 +21,16 @@ func (a *Api) registerRoutes() {
 
 	a.hs.RegisterGetRoute("/server/memory-usage", controller.ServerMemoryUsage)
 
+	// monitor //
+
+	a.hs.RegisterGetRoute("/monitor/screen-shot", controller.MonitorScreenShot)
+
+	a.hs.RegisterGetRoute("/monitor/processes", controller.MonitorProcesses)
+
+	// action //
+
+	a.hs.RegisterGetRoute("/action/lock", controller.ActionLock)
+
+	a.hs.RegisterGetRoute("/action/shutdown", controller.ActionShutdown)
+
 }

@@ -52,20 +52,20 @@ func (l *LogRecord) Log() {
 
 func Error(title string) *LogRecord {
 
-	return &LogRecord{level: "Error", title: title}
+	return &LogRecord{level: "ERROR", title: title}
 }
 
 func Warn(title string) *LogRecord {
 
-	return &LogRecord{level: "Warn", title: title}
+	return &LogRecord{level: "WARNING", title: title}
 }
 
 func Info(title string) *LogRecord {
 
-	return &LogRecord{level: "Info", title: title}
+	return &LogRecord{level: "INFO", title: title}
 }
 
 func Debug(title string) *LogRecord {
 
-	return &LogRecord{level: "Debug", title: title}
+	return &LogRecord{level: "DEBUG", title: title}
 }
