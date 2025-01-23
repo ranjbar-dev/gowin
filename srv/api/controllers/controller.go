@@ -134,6 +134,20 @@ func (controller *Controller) queries(c *gin.Context, validations map[string]str
 			continue
 		}
 
+		// int type
+		if itemType == "int" {
+
+			temp, err := strconv.Atoi(value)
+			if err != nil {
+
+				controller.badRequest(c, "could not convert "+value+" to int")
+				return nil, false
+			}
+
+			result[key] = temp
+			continue
+		}
+
 		// bool type
 		if itemType == "bool" {
 

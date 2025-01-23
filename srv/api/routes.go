@@ -27,6 +27,14 @@ func (a *Api) registerRoutes() {
 
 	a.hs.RegisterGetRoute("/monitor/processes", controller.MonitorProcesses)
 
+	// keyboard //
+
+	a.hs.RegisterGetRoute("/keyboard/press", controller.KeyboardPress)
+
+	// mouse //
+
+	a.hs.RegisterGetRoute("/mouse/move", controller.MouseMove)
+
 	// action //
 
 	a.hs.RegisterGetRoute("/action/lock", controller.ActionLock)
