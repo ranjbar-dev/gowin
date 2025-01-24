@@ -37,3 +37,18 @@ func (controller *Controller) KeyboardPress(c *gin.Context) {
 
 	controller.ok(c, "keys pressed")
 }
+
+func (controller *Controller) KeyboardType(c *gin.Context) {
+
+	data, ok := controller.queries(c, map[string]string{
+		"text": "string",
+	})
+	if !ok {
+
+		return
+	}
+
+	robotgo.TypeStr(data["text"].(string))
+
+	controller.ok(c, "text typed")
+}

@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/ranjbar-dev/gowin/config"
 	"github.com/ranjbar-dev/gowin/internal/httpserver"
@@ -21,7 +22,7 @@ func (a *Api) Start() {
 	// start http server
 	go func() {
 
-		logger.Debug("Api server started").Log()
+		logger.Debug(fmt.Sprintf("Api server started http://%s:%s", config.ApiHost(), config.ApiPort())).Log()
 		err := a.hs.Serve()
 		if err != nil {
 

@@ -31,9 +31,7 @@ func (a *Api) registerRoutes() {
 
 	a.hs.RegisterGetRoute("/keyboard/press", controller.KeyboardPress)
 
-	// mouse //
-
-	a.hs.RegisterGetRoute("/mouse/move", controller.MouseMove)
+	a.hs.RegisterGetRoute("/keyboard/type", controller.KeyboardType)
 
 	// action //
 
