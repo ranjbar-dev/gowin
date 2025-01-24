@@ -7,6 +7,7 @@ import (
 	"syscall"
 
 	"github.com/ranjbar-dev/gowin/srv/api"
+	"github.com/ranjbar-dev/gowin/srv/telegram"
 	"github.com/ranjbar-dev/gowin/tools/logger"
 )
 
@@ -37,6 +38,10 @@ func main() {
 	// start api
 	a := api.NewApi(ctx, cancel)
 	a.Start()
+
+	// start telegram
+	t := telegram.NewTelegram()
+	t.Start()
 
 	// wait to exit from app
 	<-waitChannel
