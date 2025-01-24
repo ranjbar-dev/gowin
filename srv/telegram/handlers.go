@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"image/png"
+	"time"
 
 	"github.com/kbinani/screenshot"
 	"github.com/mitchellh/go-ps"
@@ -17,6 +18,7 @@ var (
 	menu = &tele.ReplyMarkup{ResizeKeyboard: true}
 
 	// Reply buttons.
+	btnTime          = menu.Text("Time")
 	btnScreenShot    = menu.Text("Take screenshot")
 	btnListProcesses = menu.Text("List processes")
 )
@@ -30,9 +32,14 @@ func (t *Telegram) RegisterHandlers() {
 
 		user := c.Sender()
 
-		menu.Reply(menu.Row(btnScreenShot), menu.Row(btnListProcesses))
+		menu.Reply(menu.Row(btnScreenShot), menu.Row(btnListProcesses), menu.Row(btnTime))
 
 		return c.Send("hello "+user.FirstName+" "+user.LastName, menu)
+	})
+
+	adminOnly.Handle(&btnTime, func(c tele.Context) error {
+
+		return c.Send(fmt.Sprintf("Current time is %s", time.Now().Format("15:04:05")))
 	})
 
 	adminOnly.Handle(&btnScreenShot, func(c tele.Context) error {
@@ -81,7 +88,7 @@ func (t *Telegram) RegisterHandlers() {
 			list += fmt.Sprintf("%d: %s\n", i+1, process.Executable())
 		}
 
-		return c.Send(list)
+		return c.Send(list) // TODO : fix message is too long 400max
 	})
 
 }
