@@ -2,6 +2,7 @@ package telegram
 
 import (
 	"fmt"
+	"os/exec"
 	"strings"
 	"syscall"
 	"time"
@@ -28,6 +29,7 @@ var (
 	btnMessage       = menu.Text("/message")
 	btnTypeWrite     = menu.Text("/write")
 	btnLock          = menu.Text("/lock")
+	btnShutdown      = menu.Text("/shutdown")
 )
 
 func (t *Telegram) RegisterHandlers() {
@@ -53,6 +55,7 @@ func (t *Telegram) RegisterHandlers() {
 		text += "/message - open a new message box and put the text in it\n"
 		text += "/write - type text using the keyboard\n"
 		text += "/lock - lock the screen\n"
+		text += "/shutdown - shutdown the system\n"
 
 		return c.Send(text)
 	})
@@ -137,6 +140,18 @@ func (t *Telegram) RegisterHandlers() {
 		}
 
 		return c.Send("locked the system LOL")
+	})
+
+	adminOnly.Handle(&btnShutdown, func(c tele.Context) error {
+
+		cmd := exec.Command("shutdown", "/s", "/t", "0")
+		err := cmd.Run()
+		if err != nil {
+
+			return c.Send(fmt.Sprintf("Error in shutting down the system: %v", err))
+		}
+
+		return c.Send("shutting down the system, bye")
 	})
 }
 
