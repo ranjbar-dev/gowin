@@ -6,9 +6,7 @@ import (
 	"strings"
 	"syscall"
 	"time"
-	"unsafe"
 
-	"github.com/go-vgo/robotgo"
 	"github.com/mitchellh/go-ps"
 	"github.com/ranjbar-dev/gowin/config"
 	tele "gopkg.in/telebot.v4"
@@ -27,7 +25,7 @@ var (
 	btnTime          = menu.Text("/time")
 	btnListProcesses = menu.Text("/processes")
 	btnMessage       = menu.Text("/message")
-	btnTypeWrite     = menu.Text("/write")
+	btnCopyText      = menu.Text("/copy")
 	btnLock          = menu.Text("/lock")
 	btnShutdown      = menu.Text("/shutdown")
 )
@@ -53,7 +51,7 @@ func (t *Telegram) RegisterHandlers() {
 		text += "/time - show the system time\n"
 		text += "/processes - list all processes\n"
 		text += "/message - open a new message box and put the text in it\n"
-		text += "/write - type text using the keyboard\n"
+		text += "/copy - copy text to clipboard\n"
 		text += "/lock - lock the screen\n"
 		text += "/shutdown - shutdown the system\n"
 
@@ -87,7 +85,7 @@ func (t *Telegram) RegisterHandlers() {
 			list += fmt.Sprintf("%d: %s\n", i+1, process)
 		}
 
-		return c.Send(list) // TODO : fix message is too long 400max
+		return c.Send(list)
 	})
 
 	adminOnly.Handle(&btnMessage, func(c tele.Context) error {
@@ -100,24 +98,22 @@ func (t *Telegram) RegisterHandlers() {
 
 		text := strings.Join(args, " ")
 
-		// Create a goroutine to show the popup without blocking the handler
+		// Create a command to show the popup without blocking the handler
 		go func() {
-			// Create a new window
-			var user32 = syscall.NewLazyDLL("user32.dll")
-			var messageBox = user32.NewProc("MessageBoxW")
+			// Create a command to show a message box
+			cmd := exec.Command("cmd", "/c", "msg", "*", text)
+			err := cmd.Run()
+			if err != nil {
 
-			// Convert the text to UTF16 for Windows API
-			title, _ := syscall.UTF16PtrFromString("^_^")
-			content, _ := syscall.UTF16PtrFromString(text)
-
-			// Show the message box (0 is the handle for no parent window, 0 is for OK button only)
-			messageBox.Call(0, uintptr(unsafe.Pointer(content)), uintptr(unsafe.Pointer(title)), 0)
+				// If there's an error, we can't report it back to the user since we're in a goroutine
+				fmt.Println("Error showing message box:", err)
+			}
 		}()
 
 		return c.Send("popped up the message box, xP")
 	})
 
-	adminOnly.Handle(&btnTypeWrite, func(c tele.Context) error {
+	adminOnly.Handle(&btnCopyText, func(c tele.Context) error {
 
 		args := c.Args()
 		if len(args) == 0 {
@@ -127,16 +123,24 @@ func (t *Telegram) RegisterHandlers() {
 
 		text := strings.Join(args, " ")
 
-		robotgo.TypeStr(text)
+		// Copy text to clipboard
+		cmd := exec.Command("cmd", "/c", fmt.Sprintf("echo %s", text), "|", "clip")
+		err := cmd.Run()
+		if err != nil {
 
-		return c.Send("wrote the text, hehe")
+			return c.Send(fmt.Sprintf("Error copying text to clipboard: %v", err))
+		}
+
+		return c.Send("text copied to clipboard")
 	})
 
 	adminOnly.Handle(&btnLock, func(c tele.Context) error {
 
-		r, _, err := procLockWorkStation.Call()
-		if r == 0 {
-			return err
+		cmd := exec.Command("rundll32.exe", "user32.dll,LockWorkStation")
+		err := cmd.Run()
+		if err != nil {
+
+			return c.Send(fmt.Sprintf("Error locking the system: %v", err))
 		}
 
 		return c.Send("locked the system LOL")
