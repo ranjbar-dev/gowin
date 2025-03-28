@@ -7,6 +7,7 @@ import (
 	"time"
 	"unsafe"
 
+	"github.com/go-vgo/robotgo"
 	"github.com/mitchellh/go-ps"
 	"github.com/ranjbar-dev/gowin/config"
 	tele "gopkg.in/telebot.v4"
@@ -14,14 +15,19 @@ import (
 )
 
 var (
+	user32              = syscall.MustLoadDLL("user32.dll")
+	procLockWorkStation = user32.MustFindProc("LockWorkStation")
+
 	// Universal markup builders.
 	menu = &tele.ReplyMarkup{ResizeKeyboard: true}
 
 	// Reply buttons.
 	btnHelp          = menu.Text("/help")
-	btnTime          = menu.Text("/system_time")
-	btnListProcesses = menu.Text("/list_processes")
+	btnTime          = menu.Text("/time")
+	btnListProcesses = menu.Text("/processes")
 	btnMessage       = menu.Text("/message")
+	btnTypeWrite     = menu.Text("/write")
+	btnLock          = menu.Text("/lock")
 )
 
 func (t *Telegram) RegisterHandlers() {
@@ -42,9 +48,11 @@ func (t *Telegram) RegisterHandlers() {
 
 		text := "you can use the following commands:\n"
 		text += "/help - show this help\n"
-		text += "/system_time - show the system time\n"
-		text += "/list_processes - list all processes\n"
+		text += "/time - show the system time\n"
+		text += "/processes - list all processes\n"
 		text += "/message - open a new message box and put the text in it\n"
+		text += "/write - type text using the keyboard\n"
+		text += "/lock - lock the screen\n"
 
 		return c.Send(text)
 	})
@@ -84,7 +92,7 @@ func (t *Telegram) RegisterHandlers() {
 		args := c.Args()
 		if len(args) == 0 {
 
-			return c.Send("you must provide a text message")
+			return c.Send("you must provide text after command")
 		}
 
 		text := strings.Join(args, " ")
@@ -103,9 +111,33 @@ func (t *Telegram) RegisterHandlers() {
 			messageBox.Call(0, uintptr(unsafe.Pointer(content)), uintptr(unsafe.Pointer(title)), 0)
 		}()
 
-		return c.Send("done.")
+		return c.Send("popped up the message box, xP")
 	})
 
+	adminOnly.Handle(&btnTypeWrite, func(c tele.Context) error {
+
+		args := c.Args()
+		if len(args) == 0 {
+
+			return c.Send("you must provide text after command")
+		}
+
+		text := strings.Join(args, " ")
+
+		robotgo.TypeStr(text)
+
+		return c.Send("wrote the text, hehe")
+	})
+
+	adminOnly.Handle(&btnLock, func(c tele.Context) error {
+
+		r, _, err := procLockWorkStation.Call()
+		if r == 0 {
+			return err
+		}
+
+		return c.Send("locked the system LOL")
+	})
 }
 
 // btnScreenShot    = menu.Text("Take screenshot")
