@@ -1,50 +1,35 @@
 package srv
 
-import (
-	"context"
-	"os"
-	"os/signal"
-	"syscall"
+// func StartMain() {
 
-	"github.com/ranjbar-dev/gowin/srv/api"
-	"github.com/ranjbar-dev/gowin/srv/telegram"
-	"github.com/ranjbar-dev/gowin/tools/logger"
-)
+// 	// Create a channel to receive OS signals
+// 	sigs := make(chan os.Signal, 1)
+// 	signal.Notify(sigs, syscall.SIGTERM, syscall.SIGINT)
 
-func StartMain() {
+// 	waitChannel := make(chan struct{}, 1)
+// 	go func() {
 
-	// Create a context with cancellation
-	ctx, cancel := context.WithCancel(context.Background())
+// 		// we can exit from app now
+// 		defer func() {
 
-	// Create a channel to receive OS signals
-	sigs := make(chan os.Signal, 1)
-	signal.Notify(sigs, syscall.SIGTERM, syscall.SIGINT)
+// 			waitChannel <- struct{}{}
+// 		}()
 
-	waitChannel := make(chan struct{}, 1)
-	go func() {
+// 		// wait for signal to exit
+// 		<-sigs
+// 		logger.Debug("Application cancelled").Log()
+// 	}()
 
-		// we can exit from app now
-		defer func() {
+// 	// start api
+// 	a := api.NewApi()
+// 	a.Start()
 
-			waitChannel <- struct{}{}
-		}()
+// 	// start telegram
+// 	t := telegram.NewTelegram()
+// 	t.Start()
 
-		// wait for signal to exit
-		<-sigs
-		logger.Debug("Application cancelled").Log()
-		cancel()
-	}()
+// 	// wait to exit from app
+// 	<-waitChannel
 
-	// start api
-	a := api.NewApi(ctx, cancel)
-	a.Start()
-
-	// start telegram
-	t := telegram.NewTelegram()
-	t.Start()
-
-	// wait to exit from app
-	<-waitChannel
-
-	logger.Debug("Application terminated").Log()
-}
+// 	logger.Debug("Application terminated").Log()
+// }

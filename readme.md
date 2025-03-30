@@ -6,11 +6,13 @@ remove server for managing windows server
 
 run `air` command 
 
-### register as windows service 
+### build executable file 
+
+run `.scripts/build.bat` as *Administrator* 
+
+### install executable file as startup application 
 
 run `.scripts/install.bat` as *Administrator* 
-
-you can run  `.scripts/uninstall.bat` to uninstall service 
 
 ### requirements 
 

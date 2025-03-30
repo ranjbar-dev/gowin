@@ -1,12 +1,17 @@
 package telegram
 
 import (
+	"bytes"
 	"fmt"
+	"image/png"
 	"os/exec"
+	"os/user"
+	"runtime"
 	"strings"
 	"syscall"
 	"time"
 
+	"github.com/kbinani/screenshot"
 	"github.com/mitchellh/go-ps"
 	"github.com/ranjbar-dev/gowin/config"
 	tele "gopkg.in/telebot.v4"
@@ -28,6 +33,7 @@ var (
 	btnCopyText      = menu.Text("/copy")
 	btnLock          = menu.Text("/lock")
 	btnShutdown      = menu.Text("/shutdown")
+	btnScreenShot    = menu.Text("/screenshot")
 )
 
 func (t *Telegram) RegisterHandlers() {
@@ -39,9 +45,7 @@ func (t *Telegram) RegisterHandlers() {
 
 		user := c.Sender()
 
-		text := fmt.Sprintf("hello %s %s, you can call /help to see the commands", user.FirstName, user.LastName)
-
-		return c.Send(text, menu)
+		return c.Send("hello "+user.FirstName+" "+user.LastName, menu)
 	})
 
 	adminOnly.Handle(&btnHelp, func(c tele.Context) error {
@@ -54,6 +58,7 @@ func (t *Telegram) RegisterHandlers() {
 		text += "/copy - copy text to clipboard\n"
 		text += "/lock - lock the screen\n"
 		text += "/shutdown - shutdown the system\n"
+		text += "/screenshot - take a screenshot of the screens\n"
 
 		return c.Send(text)
 	})
@@ -157,56 +162,97 @@ func (t *Telegram) RegisterHandlers() {
 
 		return c.Send("shutting down the system, bye")
 	})
+
+	adminOnly.Handle(&btnScreenShot, func(c tele.Context) error {
+
+		n := screenshot.NumActiveDisplays()
+		if n == 0 {
+			return c.Send("No active displays found")
+		}
+
+		c.Send("Processing ...")
+
+		for i := 0; i < n; i++ {
+			bounds := screenshot.GetDisplayBounds(i)
+
+			// Try to capture with a small delay to ensure the system is ready
+			time.Sleep(100 * time.Millisecond)
+
+			img, err := screenshot.CaptureRect(bounds)
+			if err != nil {
+
+				// If BitBlt fails, try an alternative method
+				if err.Error() == "BitBlt failed" {
+
+					// Try capturing the entire screen instead of specific bounds
+					img, err = screenshot.CaptureDisplay(i)
+					if err != nil {
+
+						return c.Send(fmt.Sprintf("Failed to capture screenshot (both methods): %v", err))
+					}
+				} else {
+
+					return c.Send(fmt.Sprintf("Failed to capture screenshot: %v", err))
+				}
+			}
+
+			var buf bytes.Buffer
+			if err := png.Encode(&buf, img); err != nil {
+
+				return c.Send(fmt.Sprintf("Failed to encode screenshot: %v", err))
+			}
+
+			photo := &tele.Photo{File: tele.FromReader(&buf)}
+			if err := c.Send(photo); err != nil {
+
+				return c.Send(fmt.Sprintf("Failed to send photo: %v", err))
+			}
+		}
+
+		c.Send("Done")
+		return nil
+	})
+
+}
+
+func (t *Telegram) SendApplicationStartedMessage() error {
+
+	// Get current user
+	currentUser, err := user.Current()
+	if err != nil {
+		return fmt.Errorf("Error getting user info: %v", err)
+	}
+
+	// Get Windows version
+	version := runtime.GOOS + " " + runtime.GOARCH
+	if runtime.GOOS == "windows" {
+
+		// Get more detailed Windows version info
+		cmd := exec.Command("cmd", "/c", "ver")
+		output, err := cmd.Output()
+		if err == nil {
+
+			version = string(bytes.TrimSpace(output))
+		}
+	}
+
+	info := fmt.Sprintf("System Information:\n"+
+		"Username: %s\n"+
+		"Windows Version: %s\n"+
+		"User Home: %s",
+		currentUser.Username,
+		version,
+		currentUser.HomeDir)
+
+	_, err = t.bot.Send(tele.ChatID(config.TelegramChatID()), info)
+	return err
+}
+
+func (t *Telegram) SendApplicationStoppedMessage() error {
+
+	_, err := t.bot.Send(tele.ChatID(config.TelegramChatID()), "Application stopped")
+
+	return err
 }
 
 // btnScreenShot    = menu.Text("Take screenshot")
-
-// adminOnly.Handle(&btnScreenShot, func(c tele.Context) error {
-
-// 	n := screenshot.NumActiveDisplays()
-// 	if n == 0 {
-// 		return c.Send("No active displays found")
-// 	}
-
-// 	c.Send("Processing ...")
-
-// 	for i := 0; i < n; i++ {
-// 		bounds := screenshot.GetDisplayBounds(i)
-
-// 		// Try to capture with a small delay to ensure the system is ready
-// 		time.Sleep(100 * time.Millisecond)
-
-// 		img, err := screenshot.CaptureRect(bounds)
-// 		if err != nil {
-
-// 			// If BitBlt fails, try an alternative method
-// 			if err.Error() == "BitBlt failed" {
-
-// 				// Try capturing the entire screen instead of specific bounds
-// 				img, err = screenshot.CaptureDisplay(i)
-// 				if err != nil {
-
-// 					return c.Send(fmt.Sprintf("Failed to capture screenshot (both methods): %v", err))
-// 				}
-// 			} else {
-
-// 				return c.Send(fmt.Sprintf("Failed to capture screenshot: %v", err))
-// 			}
-// 		}
-
-// 		var buf bytes.Buffer
-// 		if err := png.Encode(&buf, img); err != nil {
-
-// 			return c.Send(fmt.Sprintf("Failed to encode screenshot: %v", err))
-// 		}
-
-// 		photo := &tele.Photo{File: tele.FromReader(&buf)}
-// 		if err := c.Send(photo); err != nil {
-
-// 			return c.Send(fmt.Sprintf("Failed to send photo: %v", err))
-// 		}
-// 	}
-
-// 	c.Send("Done")
-// 	return nil
-// })

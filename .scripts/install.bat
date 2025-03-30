@@ -1,37 +1,39 @@
-@REM run script from root file as administrator
-
 @echo off
 setlocal
 
-REM Check if go is installed
-where go >nul 2>nul
-if %errorlevel% neq 0 (
-	echo Go is not installed. Please install Go and try again.
-	exit /b 1
+REM Check for admin privileges
+net session >nul 2>&1
+if %errorLevel% neq 0 (
+    echo Please run this script as Administrator
+    pause
+    exit /b 1
 )
 
-REM Build the service
-go build -o build/gowin-service.exe ./cmd/service
-if %errorlevel% neq 0 (
-	echo Failed to build the service.
-	exit /b 1
+REM Set paths
+set "INSTALL_DIR=%ProgramFiles%\GoWin"
+set "STARTUP_DIR=%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup"
+set "EXE_NAME=gowin.exe"
+
+REM Create installation directory
+if not exist "%INSTALL_DIR%" mkdir "%INSTALL_DIR%"
+
+REM Build the Go application
+echo Building application...
+go build -o "%INSTALL_DIR%\%EXE_NAME%" .\cmd\main.go
+if %errorLevel% neq 0 (
+    echo Failed to build application
+    pause
+    exit /b 1
 )
 
-REM Install the service
-build\gowin-service.exe install
-if %errorlevel% neq 0 (
-	echo Failed to install the service.
-	exit /b 1
-)
+@REM copy assets folder to installation directory
+xcopy /E /I assets "%INSTALL_DIR%/assets"
 
-REM Start the service
-build\gowin-service.exe start
-if %errorlevel% neq 0 (
-	echo Failed to start the service.
-	exit /b 1
-)
 
-sc failure "Gowin" reset= 30000 actions= restart/5000/restart/10000/restart/20000
+REM Create startup script
+echo @echo off > "%STARTUP_DIR%\start_gowin.bat"
+echo start "" "%INSTALL_DIR%\%EXE_NAME%" >> "%STARTUP_DIR%\start_gowin.bat"
 
-endlocal
-
+echo Installation completed successfully!
+echo The application will start automatically when you log in.
+pause

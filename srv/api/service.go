@@ -1,7 +1,6 @@
 package api
 
 import (
-	"context"
 	"fmt"
 
 	"github.com/ranjbar-dev/gowin/config"
@@ -10,9 +9,7 @@ import (
 )
 
 type Api struct {
-	ctx    context.Context
-	cancel context.CancelFunc
-	hs     *httpserver.HttpServer
+	hs *httpserver.HttpServer
 }
 
 func (a *Api) Start() {
@@ -34,20 +31,11 @@ func (a *Api) Start() {
 
 	}()
 
-	// shutdown server when context is done
-	go func() {
-
-		<-a.ctx.Done()
-
-		a.hs.Shutdown(a.ctx)
-	}()
 }
 
-func NewApi(ctx context.Context, cancel context.CancelFunc) *Api {
+func NewApi() *Api {
 
 	return &Api{
-		ctx:    ctx,
-		cancel: cancel,
-		hs:     httpserver.NewHttpServer(config.ApiHost(), config.ApiPort(), config.ApiDebug()),
+		hs: httpserver.NewHttpServer(config.ApiHost(), config.ApiPort(), config.ApiDebug()),
 	}
 }
