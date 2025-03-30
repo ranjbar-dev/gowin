@@ -1,5 +1,64 @@
-[DEBUG] 2025-03-30T14:59:22+03:30 - Api server started http://0.0.0.0:3761
-[INFO] 2025-03-30T14:59:22+03:30 - Application ready
-[INFO] 2025-03-30T14:59:28+03:30 - Application exit
-[INFO] 2025-03-30T14:59:28+03:30 - Application stopped
-[INFO] 2025-03-30T14:59:28+03:30 - Application quit
+[DEBUG] 2025-03-30T15:21:01+03:30 - Api server started http://0.0.0.0:3761
+[ERROR] 2025-03-30T15:21:01+03:30 - Api server stopped
+ listen tcp 0.0.0.0:3761: bind: Only one usage of each socket address (protocol/network address/port) is normally permitted.
+[INFO] 2025-03-30T15:21:01+03:30 - Application ready
+[INFO] 2025-03-30T15:38:32+03:30 - Application stopped
+[DEBUG] 2025-03-30T15:38:35+03:30 - Api server started http://0.0.0.0:3761
+[ERROR] 2025-03-30T15:38:35+03:30 - Api server stopped
+ listen tcp 0.0.0.0:3761: bind: Only one usage of each socket address (protocol/network address/port) is normally permitted.
+[INFO] 2025-03-30T15:38:35+03:30 - Application ready
+[INFO] 2025-03-30T15:39:59+03:30 - Application stopped
+[DEBUG] 2025-03-30T15:40:02+03:30 - Api server started http://0.0.0.0:3761
+[ERROR] 2025-03-30T15:40:02+03:30 - Api server stopped
+ listen tcp 0.0.0.0:3761: bind: Only one usage of each socket address (protocol/network address/port) is normally permitted.
+[INFO] 2025-03-30T15:40:02+03:30 - Application ready
+[INFO] 2025-03-30T15:42:18+03:30 - Application stopped
+[DEBUG] 2025-03-30T15:42:21+03:30 - Api server started http://0.0.0.0:3761
+[ERROR] 2025-03-30T15:42:21+03:30 - Api server stopped
+ listen tcp 0.0.0.0:3761: bind: Only one usage of each socket address (protocol/network address/port) is normally permitted.
+[INFO] 2025-03-30T15:42:21+03:30 - Application ready
+[INFO] 2025-03-30T15:43:41+03:30 - Application stopped
+[DEBUG] 2025-03-30T15:43:43+03:30 - Api server started http://0.0.0.0:3761
+[ERROR] 2025-03-30T15:43:43+03:30 - Api server stopped
+ listen tcp 0.0.0.0:3761: bind: Only one usage of each socket address (protocol/network address/port) is normally permitted.
+[INFO] 2025-03-30T15:43:44+03:30 - Application ready
+[INFO] 2025-03-30T15:44:20+03:30 - Application stopped
+[DEBUG] 2025-03-30T15:44:23+03:30 - Api server started http://0.0.0.0:3761
+[ERROR] 2025-03-30T15:44:23+03:30 - Api server stopped
+ listen tcp 0.0.0.0:3761: bind: Only one usage of each socket address (protocol/network address/port) is normally permitted.
+[INFO] 2025-03-30T15:44:23+03:30 - Application ready
+[INFO] 2025-03-30T15:44:35+03:30 - Application exit
+[INFO] 2025-03-30T15:44:36+03:30 - Application exit
+[INFO] 2025-03-30T15:44:37+03:30 - Application exit
+[INFO] 2025-03-30T15:44:37+03:30 - Application stopped
+[DEBUG] 2025-03-30T15:44:40+03:30 - Api server started http://0.0.0.0:3761
+[ERROR] 2025-03-30T15:44:40+03:30 - Api server stopped
+ listen tcp 0.0.0.0:3761: bind: Only one usage of each socket address (protocol/network address/port) is normally permitted.
+[INFO] 2025-03-30T15:44:40+03:30 - Application ready
+[INFO] 2025-03-30T15:44:43+03:30 - Application stopped
+[DEBUG] 2025-03-30T15:45:36+03:30 - Api server started http://0.0.0.0:3761
+[INFO] 2025-03-30T15:45:37+03:30 - Application ready
+[INFO] 2025-03-30T15:46:39+03:30 - Application stopped
+[DEBUG] 2025-03-30T15:46:59+03:30 - Api server started http://0.0.0.0:3761
+[INFO] 2025-03-30T15:46:59+03:30 - Application ready
+[INFO] 2025-03-30T15:48:36+03:30 - Application stopped
+[DEBUG] 2025-03-30T15:48:39+03:30 - Api server started http://0.0.0.0:3761
+[INFO] 2025-03-30T15:48:39+03:30 - Application ready
+[INFO] 2025-03-30T15:48:59+03:30 - Application stopped
+[DEBUG] 2025-03-30T15:49:06+03:30 - Api server started http://0.0.0.0:3761
+[INFO] 2025-03-30T15:49:06+03:30 - Application ready
+[INFO] 2025-03-30T15:49:26+03:30 - Application stopped
+[DEBUG] 2025-03-30T15:49:29+03:30 - Api server started http://0.0.0.0:3761
+[INFO] 2025-03-30T15:49:30+03:30 - Application ready
+[DEBUG] 2025-03-30T15:50:14+03:30 - Api server started http://0.0.0.0:3761
+[INFO] 2025-03-30T15:50:15+03:30 - Application ready
+[INFO] 2025-03-30T15:51:33+03:30 - Application stopped
+[DEBUG] 2025-03-30T15:51:36+03:30 - Api server started http://0.0.0.0:3761
+[INFO] 2025-03-30T15:51:36+03:30 - Application ready
+[INFO] 2025-03-30T15:56:14+03:30 - Application stopped
+[DEBUG] 2025-03-30T15:56:17+03:30 - Api server started http://0.0.0.0:3761
+[INFO] 2025-03-30T15:56:18+03:30 - Application ready
+[INFO] 2025-03-30T15:58:12+03:30 - Application stopped
+[DEBUG] 2025-03-30T15:58:15+03:30 - Api server started http://0.0.0.0:3761
+[INFO] 2025-03-30T15:58:15+03:30 - Application ready
+[INFO] 2025-03-30T16:08:54+03:30 - Application stopped

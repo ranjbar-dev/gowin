@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"os/user"
 	"runtime"
+	"strconv"
 	"strings"
 	"syscall"
 	"time"
@@ -29,6 +30,7 @@ var (
 	btnHelp          = menu.Text("/help")
 	btnTime          = menu.Text("/time")
 	btnListProcesses = menu.Text("/processes")
+	btnTerminate     = menu.Text("/terminate")
 	btnMessage       = menu.Text("/message")
 	btnCopyText      = menu.Text("/copy")
 	btnLock          = menu.Text("/lock")
@@ -54,6 +56,7 @@ func (t *Telegram) RegisterHandlers() {
 		text += "/help - show this help\n"
 		text += "/time - show the system time\n"
 		text += "/processes - list all processes\n"
+		text += "/terminate - terminate a process\n"
 		text += "/message - open a new message box and put the text in it\n"
 		text += "/copy - copy text to clipboard\n"
 		text += "/lock - lock the screen\n"
@@ -76,21 +79,70 @@ func (t *Telegram) RegisterHandlers() {
 			return c.Send(fmt.Sprintf("Error in getting processes: %v", err))
 		}
 
-		localMap := make(map[string]struct{})
+		var list string
 		for _, process := range processes {
 
-			localMap[process.Executable()] = struct{}{}
+			list += fmt.Sprintf("%d: %s\n", process.Pid(), process.Executable())
 		}
 
-		var list string
-		var i int
-		for process := range localMap {
+		// if list size is more than 4000 char, chunks it and send it in multiple messages
+		if len(list) > 4000 {
 
-			i++
-			list += fmt.Sprintf("%d: %s\n", i+1, process)
+			start := 0
+			end := 4000
+			for {
+
+				if end > len(list) {
+
+					end = len(list)
+				}
+
+				c.Send(list[start:end])
+				start += 4000
+				end += 4000
+
+				if start >= len(list) {
+
+					break
+				}
+			}
+			return nil
+		} else {
+
+			return c.Send(list)
+		}
+	})
+
+	adminOnly.Handle(&btnTerminate, func(c tele.Context) error {
+
+		args := c.Args()
+		if len(args) == 0 {
+
+			return c.Send("you must provide a pid after command")
 		}
 
-		return c.Send(list)
+		pid := args[0]
+		pidInt, err := strconv.Atoi(pid)
+		if err != nil {
+
+			return c.Send("invalid pid")
+		}
+
+		// Terminate process using Windows API
+		handle, err := syscall.OpenProcess(syscall.PROCESS_TERMINATE, false, uint32(pidInt))
+		if err != nil {
+
+			return c.Send("failed to open process")
+		}
+		defer syscall.CloseHandle(handle)
+
+		err = syscall.TerminateProcess(handle, 1)
+		if err != nil {
+
+			return c.Send("failed to terminate process")
+		}
+
+		return c.Send("process terminated")
 	})
 
 	adminOnly.Handle(&btnMessage, func(c tele.Context) error {
@@ -220,6 +272,7 @@ func (t *Telegram) SendApplicationStartedMessage() error {
 	// Get current user
 	currentUser, err := user.Current()
 	if err != nil {
+
 		return fmt.Errorf("Error getting user info: %v", err)
 	}
 
@@ -244,8 +297,20 @@ func (t *Telegram) SendApplicationStartedMessage() error {
 		version,
 		currentUser.HomeDir)
 
-	_, err = t.bot.Send(tele.ChatID(config.TelegramChatID()), info)
-	return err
+	menu = &tele.ReplyMarkup{ResizeKeyboard: true}
+	menu.Reply(
+		menu.Row(btnHelp, btnTime),
+		menu.Row(btnListProcesses, btnScreenShot),
+		menu.Row(btnLock, btnShutdown),
+	)
+
+	_, err = t.bot.Send(tele.ChatID(config.TelegramChatID()), info, menu)
+	if err != nil {
+
+		return fmt.Errorf("Error sending application started message: %v", err)
+	}
+
+	return nil
 }
 
 func (t *Telegram) SendApplicationStoppedMessage() error {

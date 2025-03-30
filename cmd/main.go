@@ -29,7 +29,7 @@ func main() {
 	sigs = make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGTERM, syscall.SIGINT)
 
-	waitChannel := make(chan struct{}, 1)
+	forever := make(chan struct{}, 1)
 	go func() {
 
 		// wait for signal to exit
@@ -37,14 +37,15 @@ func main() {
 		logger.Info("Application stopped").Log()
 
 		// send application stopped message to telegram
-		err := telegramService.SendApplicationStartedMessage()
+		err := telegramService.SendApplicationStoppedMessage()
 		if err != nil {
 
-			logger.Error("Failed to send application started message to telegram").Message(err.Error()).Log()
+			logger.Error("Failed to send application stopped message to telegram").Message(err.Error()).Log()
 		}
 
-		// exit the app
-		waitChannel <- struct{}{}
+		os.Exit(0)
+
+		systray.Quit()
 	}()
 
 	// start api
@@ -59,13 +60,7 @@ func main() {
 	systray.Run(onReady, onExit)
 
 	// wait to exit from app
-	<-waitChannel
-
-	logger.Info("Application quit").Log()
-
-	os.Exit(0)
-
-	systray.Quit()
+	<-forever
 }
 
 func onReady() {
