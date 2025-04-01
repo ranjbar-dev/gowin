@@ -6,10 +6,12 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/ranjbar-dev/gowin/srv/api/controllers/data"
 	"github.com/ranjbar-dev/gowin/tools/logger"
 )
 
 type Controller struct {
+	data *data.Data
 }
 
 // ===== response structs ===== //
@@ -171,5 +173,7 @@ func (controller *Controller) queries(c *gin.Context, validations map[string]str
 
 func NewController() *Controller {
 
-	return &Controller{}
+	return &Controller{
+		data: data.NewData(),
+	}
 }

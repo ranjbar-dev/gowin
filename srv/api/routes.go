@@ -13,30 +13,17 @@ func (a *Api) registerRoutes() {
 
 	a.hs.RegisterGetRoute("/server/ping", controller.ServerPing)
 
-	a.hs.RegisterGetRoute("/server/timezone", controller.ServerTimezone)
+	// client //
 
-	a.hs.RegisterGetRoute("/server/timezone-offset", controller.ServerTimezoneOffset)
+	a.hs.RegisterGetRoute("/client/ping", controller.ClientPing)
 
-	a.hs.RegisterGetRoute("/server/time", controller.ServerTime)
+	a.hs.RegisterGetRoute("/client/poll-updates", controller.ClientPollUpdates)
 
-	a.hs.RegisterGetRoute("/server/memory-usage", controller.ServerMemoryUsage)
+	a.hs.RegisterGetRoute("/client/result-job", controller.ClientResultJob)
 
-	// monitor //
+	a.hs.RegisterGetRoute("/client/add-job", controller.AddJob)
 
-	a.hs.RegisterGetRoute("/monitor/screen-shot", controller.MonitorScreenShot)
+	// result //
 
-	a.hs.RegisterGetRoute("/monitor/processes", controller.MonitorProcesses)
-
-	// keyboard //
-
-	a.hs.RegisterGetRoute("/keyboard/press", controller.KeyboardPress)
-
-	a.hs.RegisterGetRoute("/keyboard/type", controller.KeyboardType)
-
-	// action //
-
-	a.hs.RegisterGetRoute("/action/lock", controller.ActionLock)
-
-	a.hs.RegisterGetRoute("/action/shutdown", controller.ActionShutdown)
-
+	a.hs.RegisterGetRoute("/result/latest", controller.GetLatestResults)
 }

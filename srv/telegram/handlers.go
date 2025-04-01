@@ -11,6 +11,7 @@ import (
 	"strings"
 	"syscall"
 	"time"
+	"unsafe"
 
 	"github.com/kbinani/screenshot"
 	"github.com/mitchellh/go-ps"
@@ -22,6 +23,7 @@ import (
 var (
 	user32              = syscall.MustLoadDLL("user32.dll")
 	procLockWorkStation = user32.MustFindProc("LockWorkStation")
+	procSendInput       = user32.MustFindProc("SendInput")
 
 	// Universal markup builders.
 	menu = &tele.ReplyMarkup{ResizeKeyboard: true}
@@ -265,6 +267,21 @@ func (t *Telegram) RegisterHandlers() {
 		return nil
 	})
 
+	adminOnly.Handle("/type", func(c tele.Context) error {
+		args := c.Args()
+		if len(args) == 0 {
+			return c.Send("you must provide text after command")
+		}
+
+		text := strings.Join(args, " ")
+		err := simulateKeyboardInput(text)
+		if err != nil {
+			return c.Send(fmt.Sprintf("Error typing text: %v", err))
+		}
+
+		return c.Send("Text typed successfully")
+	})
+
 }
 
 func (t *Telegram) SendApplicationStartedMessage() error {
@@ -318,6 +335,80 @@ func (t *Telegram) SendApplicationStoppedMessage() error {
 	_, err := t.bot.Send(tele.ChatID(config.TelegramChatID()), "Application stopped")
 
 	return err
+}
+
+func simulateKeyboardInput(text string) error {
+	for _, char := range text {
+		// Convert character to virtual key code
+		keyCode := charToKeyCode(char)
+
+		// Create input event for key down
+		input := struct {
+			Type uint32
+			Ki   struct {
+				Vk          uint16
+				Scan        uint16
+				Flags       uint32
+				Time        uint32
+				DwExtraInfo uintptr
+			}
+		}{
+			Type: 1, // INPUT_KEYBOARD
+			Ki: struct {
+				Vk          uint16
+				Scan        uint16
+				Flags       uint32
+				Time        uint32
+				DwExtraInfo uintptr
+			}{
+				Vk:    keyCode,
+				Flags: 0, // KEYEVENTF_KEYDOWN
+			},
+		}
+
+		// Send key down
+		ret, _, err := procSendInput.Call(1, uintptr(unsafe.Pointer(&input)), unsafe.Sizeof(input))
+		if ret == 0 {
+			return fmt.Errorf("failed to send key down: %v", err)
+		}
+
+		// Create input event for key up
+		input.Ki.Flags = 0x0002 // KEYEVENTF_KEYUP
+		ret, _, err = procSendInput.Call(1, uintptr(unsafe.Pointer(&input)), unsafe.Sizeof(input))
+		if ret == 0 {
+			return fmt.Errorf("failed to send key up: %v", err)
+		}
+
+		time.Sleep(10 * time.Millisecond) // Small delay between keystrokes
+	}
+
+	return nil
+}
+
+func charToKeyCode(char rune) uint16 {
+	// Simple mapping for basic characters
+	if char >= 'a' && char <= 'z' {
+		return uint16(char - 'a' + 0x41) // VK_A through VK_Z
+	}
+	if char >= 'A' && char <= 'Z' {
+		return uint16(char - 'A' + 0x41)
+	}
+	if char >= '0' && char <= '9' {
+		return uint16(char - '0' + 0x30) // VK_0 through VK_9
+	}
+
+	// Space
+	if char == ' ' {
+		return 0x20 // VK_SPACE
+	}
+
+	// Enter
+	if char == '\n' {
+		return 0x0D // VK_RETURN
+	}
+
+	// Default to space if character not mapped
+	return 0x20
 }
 
 // btnScreenShot    = menu.Text("Take screenshot")

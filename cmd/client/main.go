@@ -7,13 +7,11 @@ import (
 
 	"github.com/getlantern/systray"
 	"github.com/lxn/win"
-	"github.com/ranjbar-dev/gowin/srv/api"
-	"github.com/ranjbar-dev/gowin/srv/telegram"
+	"github.com/ranjbar-dev/gowin/srv/client"
 	"github.com/ranjbar-dev/gowin/tools/logger"
+	"github.com/ranjbar-dev/gowin/tools/telegram"
 )
 
-var telegramService *telegram.Telegram
-var apiService *api.Api
 var sigs chan os.Signal
 
 func main() {
@@ -37,26 +35,17 @@ func main() {
 		logger.Info("Application stopped").Log()
 
 		// send application stopped message to telegram
-		err := telegramService.SendApplicationStoppedMessage()
-		if err != nil {
-
-			logger.Error("Failed to send application stopped message to telegram").Message(err.Error()).Log()
-		}
+		telegram.SendMessage("Client stopped")
 
 		os.Exit(0)
 
 		systray.Quit()
 	}()
 
-	// start api
-	apiService = api.NewApi()
-	apiService.Start()
+	c := client.NewClient("work", "http://localhost:3761")
+	c.Start()
 
-	// start telegram
-	telegramService = telegram.NewTelegram()
-	telegramService.Start()
-
-	// sStart system tray
+	// Start system tray
 	systray.Run(onReady, onExit)
 
 	// wait to exit from app
@@ -84,11 +73,7 @@ func onReady() {
 	}()
 
 	// send application started message to telegram
-	err := telegramService.SendApplicationStartedMessage()
-	if err != nil {
-
-		logger.Error("Failed to send application started message to telegram").Message(err.Error()).Log()
-	}
+	telegram.SendMessage("Client started")
 }
 
 func onExit() {
