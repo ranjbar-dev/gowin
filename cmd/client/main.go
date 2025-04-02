@@ -6,7 +6,6 @@ import (
 	"syscall"
 
 	"github.com/getlantern/systray"
-	"github.com/lxn/win"
 	"github.com/ranjbar-dev/gowin/srv/client"
 	"github.com/ranjbar-dev/gowin/tools/logger"
 	"github.com/ranjbar-dev/gowin/tools/telegram"
@@ -17,11 +16,11 @@ var sigs chan os.Signal
 func main() {
 
 	// hide console window
-	console := win.GetConsoleWindow()
-	if console != 0 {
+	// console := win.GetConsoleWindow()
+	// if console != 0 {
 
-		win.ShowWindow(console, win.SW_HIDE)
-	}
+	// 	win.ShowWindow(console, win.SW_HIDE)
+	// }
 
 	// create a channel to receive OS signals
 	sigs = make(chan os.Signal, 1)

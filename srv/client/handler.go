@@ -5,6 +5,7 @@ import (
 	"os/exec"
 	"strconv"
 	"syscall"
+	"time"
 	"unsafe"
 
 	"github.com/ranjbar-dev/gowin/tools/logger"
@@ -15,6 +16,7 @@ var (
 	user32       = syscall.MustLoadDLL("user32.dll")
 	getCursorPos = user32.MustFindProc("GetCursorPos")
 	setCursorPos = user32.MustFindProc("SetCursorPos")
+	mouseEvent   = user32.MustFindProc("mouse_event")
 )
 
 func (c *Client) handleJobs() {
@@ -40,6 +42,14 @@ func (c *Client) handleJobs() {
 		case types.JobMoveMouse:
 
 			c.handleUpdateMousePosition(job)
+
+		case types.JobMouseLeftClick:
+
+			c.handleMouseLeftClick(job)
+
+		case types.JobMouseRightClick:
+
+			c.handleMouseRightClick(job)
 
 		default:
 			logger.Error("unknown job: " + job.String()).Log()
@@ -147,4 +157,36 @@ func (c *Client) handleUpdateMousePosition(job types.Job) {
 	}
 
 	logger.Info("mouse moved to new position").Message(fmt.Sprintf("x: %d, y: %d", newX, newY)).Log()
+}
+
+// handle mouse left click
+func (c *Client) handleMouseLeftClick(job types.Job) {
+
+	// Constants for mouse events
+	const (
+		MOUSEEVENTF_LEFTDOWN = 0x0002
+		MOUSEEVENTF_LEFTUP   = 0x0004
+	)
+
+	mouseEvent.Call(uintptr(MOUSEEVENTF_LEFTDOWN), 0, 0, 0, 0)
+	time.Sleep(100 * time.Millisecond)
+	mouseEvent.Call(uintptr(MOUSEEVENTF_LEFTUP), 0, 0, 0, 0)
+
+	logger.Info("left mouse button clicked").Log()
+}
+
+// handle mouse right click
+func (c *Client) handleMouseRightClick(job types.Job) {
+
+	// Constants for mouse events
+	const (
+		MOUSEEVENTF_RIGHTDOWN = 0x0008
+		MOUSEEVENTF_RIGHTUP   = 0x0010
+	)
+
+	mouseEvent.Call(uintptr(MOUSEEVENTF_RIGHTDOWN), 0, 0, 0, 0)
+	time.Sleep(100 * time.Millisecond)
+	mouseEvent.Call(uintptr(MOUSEEVENTF_RIGHTUP), 0, 0, 0, 0)
+
+	logger.Info("right mouse button clicked").Log()
 }

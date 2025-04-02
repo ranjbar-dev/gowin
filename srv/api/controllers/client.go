@@ -32,7 +32,7 @@ func (controller *Controller) ClientPollUpdates(c *gin.Context) {
 
 	// Create timeout channel
 	timeout := time.After(10 * time.Second)
-	ticker := time.NewTicker(100 * time.Millisecond)
+	ticker := time.NewTicker(10 * time.Millisecond)
 
 	defer ticker.Stop()
 
@@ -53,7 +53,7 @@ func (controller *Controller) ClientPollUpdates(c *gin.Context) {
 			controller.ok(c, []string{})
 			return
 
-		// each 500ms check for jobs
+		// each 10ms check for jobs
 		case <-ticker.C:
 
 			// Check for jobs first

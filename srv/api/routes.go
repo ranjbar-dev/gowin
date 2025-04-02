@@ -26,4 +26,8 @@ func (a *Api) registerRoutes() {
 	// result //
 
 	a.hs.RegisterGetRoute("/result/latest", controller.GetLatestResults)
+
+	// admin //
+
+	a.hs.RegisterGetRoute("/admin/dashboard", controller.AdminDashboard)
 }

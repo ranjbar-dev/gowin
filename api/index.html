@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <style>
+      .joystick-container {
+        width: 300px;
+        height: 300px;
+        background-color: #f0f0f0;
+        border-radius: 50%;
+        position: relative;
+        margin: 50px auto;
+        border: 2px solid #ccc;
+      }
+
+      .joystick {
+        width: 80px;
+        height: 80px;
+        background-color: #333;
+        border-radius: 50%;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        cursor: pointer;
+        user-select: none;
+      }
+
+      .status {
+        text-align: center;
+        margin-top: 20px;
+        font-family: Arial, sans-serif;
+      }
+    </style>
+
+    <div class="joystick-container" id="joystickContainer">
+      <div class="joystick" id="joystick"></div>
+    </div>
+
+    <div class="status" id="status">X: 0, Y: 0</div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const joystick = document.getElementById("joystick");
+        const container = document.getElementById("joystickContainer");
+        const status = document.getElementById("status");
+
+        let isDragging = false;
+        let containerRect = container.getBoundingClientRect();
+        const containerCenterX = containerRect.width / 2;
+        const containerCenterY = containerRect.height / 2;
+        const maxDistance = containerRect.width / 2 - joystick.offsetWidth / 2;
+
+        // Update container dimensions on window resize
+        window.addEventListener("resize", function () {
+          containerRect = container.getBoundingClientRect();
+        });
+
+        // Mouse events
+        joystick.addEventListener("mousedown", startDrag);
+        document.addEventListener("mousemove", drag);
+        document.addEventListener("mouseup", endDrag);
+
+        // Touch events
+        joystick.addEventListener("touchstart", startDrag);
+        document.addEventListener("touchmove", drag);
+        document.addEventListener("touchend", endDrag);
+
+        function startDrag(e) {
+          isDragging = true;
+          e.preventDefault();
+        }
+
+        function drag(e) {
+          if (!isDragging) return;
+
+          e.preventDefault();
+
+          const containerRect = container.getBoundingClientRect();
+
+          // Get pointer position (mouse or touch)
+          let clientX, clientY;
+          if (e.type.startsWith("touch")) {
+            clientX = e.touches[0].clientX;
+            clientY = e.touches[0].clientY;
+          } else {
+            clientX = e.clientX;
+            clientY = e.clientY;
+          }
+
+          // Calculate position relative to container center
+          let x = clientX - containerRect.left - containerCenterX;
+          let y = clientY - containerRect.top - containerCenterY;
+
+          // Calculate distance from center
+          const distance = Math.sqrt(x * x + y * y);
+
+          // Limit joystick movement to container bounds
+          if (distance > maxDistance) {
+            const angle = Math.atan2(y, x);
+            x = Math.cos(angle) * maxDistance;
+            y = Math.sin(angle) * maxDistance;
+          }
+
+          // Update joystick position
+          joystick.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`;
+
+          // Normalize coordinates to -1 to 1 range
+          const normalizedX = x / maxDistance;
+          const normalizedY = y / maxDistance;
+
+          // Update status display
+          status.textContent = `X: ${normalizedX.toFixed(
+            2
+          )}, Y: ${normalizedY.toFixed(2)}`;
+
+          // Send mouse move request
+          sendMouseMoveRequest(normalizedX, normalizedY);
+        }
+
+        function endDrag() {
+          if (!isDragging) return;
+
+          isDragging = false;
+
+          // Reset joystick position
+          joystick.style.transform = "translate(-50%, -50%)";
+          status.textContent = "X: 0, Y: 0";
+
+          // Send reset position
+          sendMouseMoveRequest(0, 0);
+        }
+
+        function sendMouseMoveRequest(x, y) {
+          x = parseInt(x * 10);
+          y = parseInt(y * 10);
+
+          fetch(
+            `/client/add-job?client_id=work&name=move-mouse&params=["${x}","${y}"]`,
+            {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+              },
+            }
+          ).catch((error) => {
+            console.error("Error sending mouse move request:", error);
+          });
+        }
+      });
+    </script>
+  </body>
+</html>
