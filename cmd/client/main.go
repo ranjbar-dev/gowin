@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
@@ -9,18 +10,22 @@ import (
 	"github.com/ranjbar-dev/gowin/srv/client"
 	"github.com/ranjbar-dev/gowin/tools/logger"
 	"github.com/ranjbar-dev/gowin/tools/telegram"
+
+	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/app"
+	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/widget"
 )
 
-var sigs chan os.Signal
+var (
+	sigs    chan os.Signal
+	guiChan chan struct{} = make(chan struct{})
+	fyneApp fyne.App
+)
 
 func main() {
-
-	// hide console window
-	// console := win.GetConsoleWindow()
-	// if console != 0 {
-
-	// 	win.ShowWindow(console, win.SW_HIDE)
-	// }
+	// Initialize Fyne app once
+	fyneApp = app.New()
 
 	// create a channel to receive OS signals
 	sigs = make(chan os.Signal, 1)
@@ -28,31 +33,34 @@ func main() {
 
 	forever := make(chan struct{}, 1)
 	go func() {
-
-		// wait for signal to exit
 		<-sigs
 		logger.Info("Application stopped").Log()
-
-		// send application stopped message to telegram
 		telegram.SendMessage("Client stopped")
-
+		if fyneApp != nil {
+			fyneApp.Quit()
+		}
 		os.Exit(0)
-
 		systray.Quit()
 	}()
 
 	c := client.NewClient("work", "http://localhost:3761")
 	c.Start()
 
-	// Start system tray
-	systray.Run(onReady, onExit)
+	// Start system tray in a goroutine
+	go systray.Run(onReady, onExit)
 
-	// wait to exit from app
-	<-forever
+	// Main event loop
+	for {
+		select {
+		case <-forever:
+			return
+		case <-guiChan:
+			showGUI()
+		}
+	}
 }
 
 func onReady() {
-
 	logger.Info("Application ready").Log()
 
 	systray.SetIcon(getIcon())
@@ -60,6 +68,7 @@ func onReady() {
 	systray.SetTooltip("Gowin")
 
 	// register menu items
+	openGUI := systray.AddMenuItem("Open GUI", "Open the GUI")
 	mQuit := systray.AddMenuItem("Quit", "Quit the app")
 	go func() {
 		for {
@@ -67,29 +76,49 @@ func onReady() {
 			case <-mQuit.ClickedCh:
 				systray.Quit()
 				return
+			case <-openGUI.ClickedCh:
+				// Signal main thread to show GUI
+				guiChan <- struct{}{}
 			}
 		}
 	}()
 
-	// send application started message to telegram
 	telegram.SendMessage("Client started")
 }
 
 func onExit() {
-
 	logger.Info("Application exit").Log()
-
-	// send terminate signal to stop services
 	sigs <- syscall.SIGTERM
 }
 
 func getIcon() []byte {
-
 	icon, err := os.ReadFile("assets/icon.ico")
 	if err != nil {
-
 		panic(err)
 	}
-
 	return icon
+}
+
+func showGUI() {
+	fmt.Println("GUI opened")
+
+	w := fyneApp.NewWindow("Hello")
+
+	hello := widget.NewLabel("Hello Fyne!")
+	w.SetContent(container.NewVBox(
+		hello,
+		widget.NewButton("Hi!", func() {
+			hello.SetText("Welcome :)")
+		}),
+	))
+
+	// Set close callback
+	w.SetOnClosed(func() {
+		fmt.Println("GUI closed")
+	})
+	w.Show()
+	w.RequestFocus()
+	w.ShowAndRun()
+
+	w.Close()
 }
